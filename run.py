@@ -2,33 +2,41 @@ import os
 import pandas as pd
 from datetime import datetime
 from app.scraper.scholar import search_google_scholar
+from app.scraper.pdf_downloader import download_pdf_via_chrome
 
 if __name__ == "__main__":
-    scraping_name = "time_series_search_0"
-    query = "time series frequency analysis for prediction"
+    scraping_name = "medical_image_0"
+    query = "deep learning medical imaging"
 
-    # Perform search
+    # Scrape results
     results = search_google_scholar(query)
 
-    # Prepare folder
+    # Prepare folders
     folder_path = f"data/{scraping_name}"
-    os.makedirs(folder_path, exist_ok=True)
+    pdf_folder = f"{folder_path}/pdfs"
+    os.makedirs(pdf_folder, exist_ok=True)
 
-    # Save results to CSV
+    # Save CSV
     df = pd.DataFrame(results)
     df.to_csv(f"{folder_path}/items.csv", index=False)
 
-    # Log file creation
-    now = datetime.now()
-    timestamp = now.strftime("%Y-%m-%d %H:%M")
-    log_path = os.path.join(folder_path, "log.txt")
-
-    with open(log_path, "w", encoding="utf-8") as f:
+    # Write log file
+    now = datetime.now().strftime("%Y-%m-%d %H:%M")
+    with open(f"{folder_path}/log.txt", "w", encoding="utf-8") as f:
         f.write(f"Scraping Name: {scraping_name}\n")
-        f.write(f"Timestamp: {timestamp}\n")
+        f.write(f"Timestamp: {now}\n")
         f.write(f"Query: {query}\n")
         f.write(f"Found Articles: {len(results)}\n")
 
-    # Output to console
-    for paper in results:
-        print(f"{paper['title']} -> {paper['link']}")
+    # Download PDFs
+    for i, paper in enumerate(results, 1):
+        title = paper.get("title")
+        link = paper.get("link")
+        print(f"[{i}] {title} -> {link}")
+
+        if not link:
+            continue
+
+        success = download_pdf_via_chrome(link, pdf_folder, i)
+        if not success:
+            print(f"[✗] Failed to download PDF for: {title}")
