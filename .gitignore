@@ -21,3 +21,6 @@ __pycache__/
 # Logs and temp
 *.log
 *.tmp
+
+# Data files
+*.csv
