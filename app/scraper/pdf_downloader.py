@@ -44,7 +44,7 @@ def download_pdf_via_chrome(original_url, download_dir, index):
     try:
         sci_hub_url = f"https://sci-hub.se/{original_url}"
         driver.get(sci_hub_url)
-        time.sleep(3)
+        time.sleep(10)
 
         pdf_url = None
 
@@ -59,11 +59,14 @@ def download_pdf_via_chrome(original_url, download_dir, index):
         # Fallback: button with onclick
         if not pdf_url:
             try:
-                button = driver.find_element(By.TAG_NAME, "button")
-                onclick = button.get_attribute("onclick")
-                if onclick and "location.href=" in onclick:
-                    raw_url = onclick.split("location.href=")[-1]
-                    pdf_url = normalize_pdf_url(raw_url)
+                # Try finding any clickable element with location.href
+                elements = driver.find_elements(By.XPATH, "//*[@onclick]")
+                for el in elements:
+                    onclick = el.get_attribute("onclick")
+                    if onclick and "location.href=" in onclick:
+                        raw_url = onclick.split("location.href=")[-1]
+                        pdf_url = normalize_pdf_url(raw_url)
+                        break
             except Exception as e:
                 print(f"[✗] No iframe or download button found: {e}")
                 return False
