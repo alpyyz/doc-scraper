@@ -5,11 +5,11 @@ from app.scraper.scholar import search_google_scholar
 from app.scraper.pdf_downloader import download_pdf_via_chrome
 
 if __name__ == "__main__":
-    scraping_name = "ts_anomaly_sensory_data"
-    query = "time series anomaly detection sensory data"
+    scraping_name = "ts_electricity_price_forecast"
+    query = "day-ahead electricity price forecast"
 
     # Scrape results
-    results = search_google_scholar(query)
+    results = search_google_scholar(query, 3)
 
     # Prepare folders
     folder_path = f"data/{scraping_name}"
