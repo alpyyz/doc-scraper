@@ -2,7 +2,8 @@ import os
 import pandas as pd
 from datetime import datetime
 from app.scraper.scholar import search_google_scholar
-from app.scraper.pdf_downloader import download_pdf_via_chrome
+from app.scraper.pdf_handler import download_pdf_via_chrome, extract_text_from_pdf
+from app.storage.postgresql_handler import get_pg_connection, insert_paper_pg
 
 if __name__ == "__main__":
     scraping_name = "ts_electricity_price_forecast"
@@ -27,6 +28,9 @@ if __name__ == "__main__":
         f.write(f"Timestamp: {now}\n")
         f.write(f"Query: {query}\n")
         f.write(f"Found Articles: {len(results)}\n")
+    
+    # Connect to the PostgreSQL DB
+    conn = get_pg_connection()
 
     # Download PDFs
     for i, paper in enumerate(results, 1):
@@ -37,6 +41,22 @@ if __name__ == "__main__":
         if not link:
             continue
 
-        success = download_pdf_via_chrome(link, pdf_folder, i)
+        success, scihub_link = download_pdf_via_chrome(link, pdf_folder, i)
         if not success:
             print(f"[✗] Failed to download PDF for: {title}")
+        
+        pdf_path = f"{pdf_folder}/{i:02d}.pdf" if success else None
+        if success:
+            raw_text = extract_text_from_pdf(pdf_path)
+        else:
+            raw_text = None
+
+
+        insert_paper_pg(
+                conn=conn,
+                title=title,
+                scholar_link=link,
+                scihub_link=scihub_link,
+                is_downloaded=success,
+                local_path=pdf_path
+            )

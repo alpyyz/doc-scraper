@@ -9,10 +9,11 @@ def get_pg_connection():
         port="5432"         # default PostgreSQL port
     )
 
-def insert_paper_pg(conn, title, scholar_link, scihub_link, is_downloaded, local_path):
+def insert_paper_pg(conn, title, scholar_link, scihub_link, is_downloaded, local_path, raw_text):
     with conn.cursor() as cursor:
         cursor.execute("""
-            INSERT INTO all_papers (title, scholar_link, scihub_link, is_downloaded, local_path)
-            VALUES (%s, %s, %s, %s, %s)
-        """, (title, scholar_link, scihub_link, is_downloaded, local_path))
+            --sql
+            INSERT INTO all_papers (title, scholar_link, scihub_link, is_downloaded, local_path, raw)
+            VALUES (%s, %s, %s, %s, %s, %s);
+        """, (title, scholar_link, scihub_link, is_downloaded, local_path, raw_text))
     conn.commit()

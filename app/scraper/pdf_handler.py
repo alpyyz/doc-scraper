@@ -1,12 +1,20 @@
 import os
 import time
 import glob
+import pypdfium2
+
 from urllib.parse import urljoin
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
+
+def extract_text_from_pdf(path):
+    pdf = pypdfium2.PdfDocument(path)
+    text = "\n".join(page.get_textpage().get_text_range() for page in pdf)
+    pdf.close()
+    return text
 
 def normalize_pdf_url(raw_url: str):
     raw_url = raw_url.strip("'\"")
@@ -69,11 +77,11 @@ def download_pdf_via_chrome(original_url, download_dir, index):
                         break
             except Exception as e:
                 print(f"[✗] No iframe or download button found: {e}")
-                return False
+                return False, None, None
 
         if not pdf_url:
             print(f"[✗] Could not extract valid PDF URL from: {original_url}")
-            return False
+            return False, None, None
 
         # Trigger download
         driver.get(pdf_url)
@@ -84,7 +92,7 @@ def download_pdf_via_chrome(original_url, download_dir, index):
         pdfs = glob.glob(os.path.join(download_dir, "*.pdf"))
         if not pdfs:
             print(f"[!] No PDF file detected in: {download_dir}")
-            return False
+            return False, None, None
 
         latest_pdf = max(pdfs, key=os.path.getctime)
         target_path = os.path.join(download_dir, f"{index:02d}.pdf")
@@ -95,11 +103,13 @@ def download_pdf_via_chrome(original_url, download_dir, index):
 
         os.rename(latest_pdf, target_path)
         print(f"[✓] Saved as {target_path}")
-        return True
+        return True, original_url, pdf_url
 
     except Exception as e:
         print(f"[✗] Error during PDF download: {e}")
-        return False
+        return False, None, None
 
     finally:
         driver.quit()
+
+
