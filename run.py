@@ -6,8 +6,8 @@ from app.scraper.pdf_handler import download_pdf_via_chrome, extract_text_from_p
 from app.storage.postgresql_handler import get_pg_connection, insert_paper_pg
 
 if __name__ == "__main__":
-    scraping_name = "ts_electricity_price_forecast"
-    query = "day-ahead electricity price forecast"
+    scraping_name = "medical_imaging_0"
+    query = "medical image anomaly detection lung"
 
     # Scrape results
     results = search_google_scholar(query, 3)
@@ -58,5 +58,6 @@ if __name__ == "__main__":
                 scholar_link=link,
                 scihub_link=scihub_link,
                 is_downloaded=success,
-                local_path=pdf_path
+                local_path=pdf_path,
+                raw_text=extract_text_from_pdf(pdf_path)
             )
