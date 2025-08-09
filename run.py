@@ -8,9 +8,9 @@ from app.scraper.pdf_handler import extract_text_from_pdf
 from app.storage.postgresql_handler import get_pg_connection, insert_paper_pg
 
 if __name__ == "__main__":
-    scraping_name = "medical_imaging_0"
-    query = "medical image anomaly detection lung"
-    max_results = 3
+    scraping_name = "tree_algorithms"
+    query = "tree based algorithms"
+    max_results = 300
 
     # Create folders
     folder_path = f"data/{scraping_name}"
@@ -27,6 +27,7 @@ if __name__ == "__main__":
     # Prepare result list
     results = []
     for result in search.results():
+        #TODO: 
         results.append({
             "title": result.title,
             "link": result.entry_id,
